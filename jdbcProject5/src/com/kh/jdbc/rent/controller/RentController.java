@@ -34,7 +34,7 @@ public class RentController {
 		if(rentService.insertRentInfo(rent, bookList)) {
 			return title;
 		}else {
-			return ErrorCode.IR01.errMsg();
+			return ErrorCode.DATABASE_ACCESS_ERROR.desc;
 		}
 	}
 	
