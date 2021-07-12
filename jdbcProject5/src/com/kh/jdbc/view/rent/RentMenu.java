@@ -39,6 +39,7 @@ public class RentMenu {
 					System.out.print("대출할 도서의 도서명을 입력하세요 :");
 					rBook = bookController.searchBookByTitle(sc.nextLine());
 					bookList.add(rBook);
+					System.out.println("대출 목록에 " + rBook.getTitle() + "이 등록되었습니다.");
 					
 					System.out.println("대출할 도서가 더 존재하나요?(y/n) : ");
 					if(sc.nextLine().toUpperCase().equals("N")) {

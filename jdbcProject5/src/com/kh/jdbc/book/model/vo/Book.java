@@ -4,7 +4,7 @@ import java.sql.Date;
 
 public class Book {
 	
-	private int bIdx;
+	private String bkIdx;
 	private String isbn;
 	private String category;
 	private String title;
@@ -12,15 +12,16 @@ public class Book {
 	private String info;
 	private int bookAmt;
 	private Date regDate;
-	private int rentCnt;
+	private int rentCnt;	
 	
-	public int getbIdx() {
-		return bIdx;
+	public String getBkIdx() {
+		return bkIdx;
 	}
-	public void setbIdx(int bIdx) {
-		this.bIdx = bIdx;
+
+	public void setBkIdx(String bkIdx) {
+		this.bkIdx = bkIdx;
 	}
-	
+
 	public String getIsbn() {
 		return isbn;
 	}
@@ -84,16 +85,11 @@ public class Book {
 	public void setRentCnt(int rentCnt) {
 		this.rentCnt = rentCnt;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Book [bIdx=" + bIdx + ", isbn=" + isbn + ", category=" + category + ", title=" + title + ", author="
+		return "Book [bkIdx=" + bkIdx + ", isbn=" + isbn + ", category=" + category + ", title=" + title + ", author="
 				+ author + ", info=" + info + ", bookAmt=" + bookAmt + ", regDate=" + regDate + ", rentCnt=" + rentCnt
 				+ "]";
 	}
-	
-	
-	
-	
-
 }

@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kh.jdbc.common.code.MemberGrade;
 import com.kh.jdbc.member.model.service.MemberService;
 import com.kh.jdbc.member.model.vo.Member;
 
@@ -21,6 +22,7 @@ public class MemberController {
 	
 	public Member login(String userId, String password) {
 		Member member = memberService.memberAuthenticate(userId, password);
+		System.out.println(member);
 		return member;
 	}
 	

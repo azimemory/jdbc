@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kh.jdbc.common.code.MemberGrade;
 import com.kh.jdbc.common.exception.DataAccessException;
 import com.kh.jdbc.common.template.JDBCTemplate;
 import com.kh.jdbc.member.model.dao.MemberDao;
@@ -25,6 +26,11 @@ public class MemberService {
 		Connection conn = jdt.getConnection();
 		//Dao에게 userId와 password로 식별할 수 있는 회원정보를 DB에서 조회할 것을 요청
 		Member member = memberDao.memberAuthenticate(conn, userId, password);
+		
+		//Enum의 valueOf(str) 메서드를 사용해 원하는 문자열을 매개변수로 입력하면
+		// 그 문자열과 같은 변수명을 가진 Enum인스턴스를 반환
+		member.setGrade(MemberGrade.valueOf(member.getGrade()).desc());
+		
 		jdt.close(conn);
 		return member;
 	}

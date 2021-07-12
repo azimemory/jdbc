@@ -36,8 +36,8 @@ public class JDBCTemplate {
 	public Connection getConnection() {
 		
 		String url = "jdbc:oracle:thin:@localhost:1521:xe";
-		String user = "BOOKMANAGER";
-		String password = "USER11";
+		String user = "bookmanager";
+		String password = "1234";
 		
 		Connection conn = null;
 		

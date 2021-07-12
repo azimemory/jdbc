@@ -37,20 +37,6 @@ public class Index {
 		//반환받은 회원정보가 존재하지 않으면
 		//"아이디나 암호를 확인하세요" 출력 후 프로그램 종료
 		if(member != null) {
-			/*
-			 * switch(rset.getString("grade")) {
-			 * case "ME00" : member.setGrade("일반"); break;
-			 * case "ME01" : member.setGrade("성실"); break;
-			 * case "ME02" : member.setGrade("우수"); break;
-			 * case "ME03" : member.setGrade("VIP"); break;
-			 * }
-			 */
-			
-			//Enum의 valueOf(str) 메서드를 사용해 원하는 문자열을 매개변수로 입력하면
-			// 그 문자열과 같은 변수명을 가진 Enum인스턴스를 반환
-			member.setGrade(MemberGrade.valueOf(member.getGrade()).desc());
-			System.out.println(member);
-			
 			while(true) {
 				System.out.println("관리할 메뉴를 선택하세요.");
 				System.out.println("1. 회원관리");
@@ -68,9 +54,6 @@ public class Index {
 				
 				}
 			}
-			
-			
-			
 		}else {
 			System.out.println("아이디나 암호를 확인하세요.");
 		}

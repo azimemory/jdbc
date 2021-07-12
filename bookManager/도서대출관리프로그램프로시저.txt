@@ -1,0 +1,238 @@
+--1. 시퀀스 삭제 및 생성
+DROP SEQUENCE SC_BK_IDX;
+DROP SEQUENCE SC_RM_IDX;
+DROP SEQUENCE SC_RB_IDX;
+DROP SEQUENCE SC_RH_IDX;
+DROP SEQUENCE SC_BOARD_IDX;
+DROP SEQUENCE SC_FILE_IDX;
+DROP SEQUENCE SC_BC_IDX;
+
+create sequence SC_BK_IDX
+START WITH 100000;
+
+create sequence SC_RM_IDX
+START WITH 100000;
+
+create sequence SC_RB_IDX
+START WITH 100000;
+
+create sequence SC_RH_IDX
+START WITH 100000;
+
+create sequence SC_BOARD_IDX
+START WITH 100000;
+
+CREATE SEQUENCE SC_FILE_IDX
+START WITH 100000;
+
+CREATE SEQUENCE SC_BC_IDX
+START WITH 100000;
+
+SELECT * FROM USER_SEQUENCES;
+
+--2. 회원더미데이터 입력
+INSERT INTO MEMBER VALUES('DEV','123ABC!@3','aaa@aaa.com','ME00','010-0000-0000',SYSDATE, sysdate, 0);
+  
+--3. 도서 더미데이터 입력
+INSERT INTO book
+(BK_IDX,category,title,author,REG_DATE,BOOK_AMT,RENT_CNT)
+VALUES(sc_BK_IDX.NEXTVAL,'BC00','비행운','김애란',SYSDATE,1,0);
+
+INSERT INTO book
+(BK_IDX,category,title,author,REG_DATE,BOOK_AMT,RENT_CNT)
+VALUES(sc_BK_IDX.NEXTVAL,'BC00','남한산성','김훈',SYSDATE,1,0);
+
+INSERT INTO book
+(BK_IDX,category,title,author,REG_DATE,BOOK_AMT,RENT_CNT)
+VALUES(sc_BK_IDX.NEXTVAL,'BC00','사랑의기술','에리히프롬',SYSDATE,1,0);
+
+INSERT INTO book
+(BK_IDX,category,title,author,REG_DATE,BOOK_AMT,RENT_CNT)
+VALUES(sc_BK_IDX.NEXTVAL,'BC00','달콤한나의도시','정이현',SYSDATE,1,0);
+
+--4. RENT_MASTER 테이블에 더미데이터 추가
+insert into rent_master values(sc_rm_idx.nextval,'UCLASS',SYSDATE,0,'비행운',1);
+
+  SELECT * FROM rent_master;
+  SELECT * FROM BOOK;
+  SELECT * FROM RENT_BOOK;
+  SELECT * FROM MEMBER;
+  SELECT * FROM RENT_HISTORY;  
+  
+--테이블타입 생성하기
+CREATE OR REPLACE TYPE BK_IDXS IS TABLE OF VARCHAR2(30 CHAR);
+
+--5. 대출정보추가 프로시저 생성
+create or replace PROCEDURE SP_RENT_INSERT
+(V_BK_IDX BOOK.BK_IDX%TYPE)
+IS
+    V_RM_IDX RENT_MASTER.RM_IDX%TYPE;
+BEGIN
+    --1. RENT_BOOK 테이블에 데이터 입력
+    --      데이터를 입력하기 위해 현재 RM_IDX의 기본키값을 구한다.
+    V_RM_IDX := SC_RM_IDX.CURRVAL;
+    INSERT INTO RENT_BOOK(RB_IDX,RM_IDX,BK_IDX)
+    VALUES(SC_RB_IDX.NEXTVAL,V_RM_IDX,V_BK_IDX);
+
+    --2. RENT_HISTORY 테이블에 데이터를 입력
+    INSERT INTO RENT_HISTORY
+    VALUES(SC_RH_IDX.NEXTVAL, V_RM_IDX,SC_RB_IDX.CURRVAL
+          ,V_BK_IDX, SYSDATE, 'RE00');
+
+    --3. BOOK테이블에 도서재고를 차감, 대출 횟수 증가
+    UPDATE BOOK 
+    SET BOOK_AMT = BOOK_AMT-1
+    , RENT_CNT = RENT_CNT +1
+    WHERE BK_IDX = V_BK_IDX;
+END;
+/
+
+--프로시저 
+DECLARE    
+    BK_IDX_ARR BK_IDXS;    
+BEGIN
+    BK_IDX_ARR := BK_IDXS('100000','100001','100002');  
+    DBMS_OUTPUT.PUT_LINE(BK_IDX_ARR(1));
+    SP_RENT_INSERT('DEV','비행운 외 2권',3,BK_IDX_ARR);
+END;
+/
+
+--프로시저 테스트
+BEGIN
+    SP_RENT_INSERT(100000);
+END;  
+/
+  SELECT * FROM rent_master;
+  SELECT * FROM BOOK;
+  SELECT * FROM RENT_BOOK;
+  SELECT * FROM MEMBER;
+  SELECT * FROM RENT_HISTORY; 
+
+--6. 대출연장 프로시저 생성
+create or replace PROCEDURE SP_RENT_EXTEND
+(
+--매개변수로 넘어온 대출번호
+P_RM_IDX IN RENT_MASTER.rm_Idx%type,
+--매개변수로 넘어온 대출도서번호
+P_RB_IDX IN RENT_BOOK.rb_idx%type
+)
+IS
+--도서번호 변수 선언
+V_bk_idx BOOK.bk_idx%TYPE;
+BEGIN
+    --도서번호 변수에 대출 중인 도서의 도서번호를 초기화
+    SELECT bk_idx 
+    INTO v_bk_idx 
+	FROM  RENT_BOOK
+    WHERE rb_idx = P_RB_IDX;            
+
+   UPDATE 
+	RENT_BOOK
+	SET STATE = 'RE01'
+	,RETURN_DATE = RETURN_DATE + 7
+	,EXTENSION_CNT = EXTENSION_CNT + 1
+	WHERE rb_idx = P_RB_IDX;   
+
+     --히스토리 테이블에 데이터 추가
+    INSERT INTO RENT_HISTORY
+    VALUES(SC_RH_IDX.NEXTVAL, P_RM_IDX, P_RB_IDX, v_bk_idx
+    ,SYSDATE, 'RE01');   
+END;
+/
+
+--프로시저 테스트
+--연장 테스트
+BEGIN
+    SP_RENT_EXTEND(100000, 100000);
+END;
+/
+
+  SELECT * FROM rent_master;
+  SELECT * FROM BOOK;
+  SELECT * FROM RENT_BOOK;
+  SELECT * FROM MEMBER;
+  SELECT * FROM RENT_HISTORY; 
+
+--대출반납 프로시저 생성
+create or replace PROCEDURE SP_RENT_RETURN
+(
+--매개변수로 넘어온 대출번호
+P_RB_IDX IN RENT_BOOK.rb_Idx%type
+)
+IS
+--대출 중인 도서 권수
+V_RENT_CNT number;
+--도서번호
+V_BK_IDX book.bk_Idx%TYPE;
+--반납예정일
+V_RETURN_DATE rent_book.return_DATE%TYPE;
+--대출번호
+V_RM_IDX rent_master.rm_Idx%type;
+--회원아이디
+V_USER_ID MEMBER.USER_ID%type;
+
+BEGIN
+--도서번호 변수, 반납일 변수에 대출 중인 도서의 도서번호, 반납일을 초기화
+SELECT BK_IDX, RETURN_DATE, RM_IDX, USER_ID, RENT_BOOK_CNT
+INTO V_BK_IDX, V_RETURN_DATE, V_RM_IDX, V_USER_ID, V_RENT_CNT
+FROM RENT_BOOK RB
+INNER JOIN RENT_MASTER RM USING(RM_IDX)
+WHERE RB_IDX = P_RB_IDX;
+
+--반납된 도서 대출가능으로 변경
+UPDATE BOOK 
+SET BOOK_AMT = BOOK_AMT + 1 
+WHERE BK_IDX = V_BK_IDX;
+
+--연체일 경우 
+--오늘날짜 + 연체일수*4 한 값을 MEMBER의 RENTABLEDATE에 넣어줌     
+IF TRUNC(V_RETURN_DATE) < TRUNC(SYSDATE)
+THEN 
+
+ UPDATE MEMBER 
+	SET RENTABLE_DATE =        
+	SYSDATE + (TRUNC(SYSDATE) - TRUNC(V_RETURN_DATE)) * 4
+	where 
+	user_Id = V_USER_ID;   
+
+END IF;   
+
+--대출상태, 반납일 수정
+UPDATE RENT_BOOK 
+SET STATE = 'RE03', RETURN_DATE = SYSDATE
+WHERE RB_IDX = P_RB_IDX;
+
+--rent_master테이블에서 모든 도서 반납여부 확인후 isReturn 값 변경
+select count(*) into V_RENT_CNT from rent_book           
+where rm_Idx = V_RM_IDX AND STATE != 'RE03';
+
+IF V_RENT_CNT = 0
+THEN 
+	UPDATE RENT_MASTER SET IS_RETURN = 1
+	WHERE RM_IDX = V_RM_IDX;
+END IF;
+
+ --히스토리 테이블에 데이터 추가
+INSERT INTO RENT_HISTORY
+VALUES(SC_RH_IDX.NEXTVAL, V_RM_IDX, P_RB_IDX, V_BK_IDX
+,SYSDATE, 'RE03'); 
+END;
+/
+
+--프로시저 테스트
+--연체 테스트를 위한 반납일자 수정
+UPDATE RENT_BOOK
+SET RETURN_DATE = SYSDATE - 1
+WHERE RB_IDX = 100000;
+
+--연체/반납 테스트
+BEGIN
+    SP_RENT_RETURN (100000);
+END;
+/
+  
+SELECT * FROM rent_master;
+SELECT * FROM BOOK;
+SELECT * FROM RENT_BOOK;
+SELECT * FROM MEMBER;
+SELECT * FROM RENT_HISTORY;  

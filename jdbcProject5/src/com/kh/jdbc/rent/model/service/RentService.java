@@ -29,14 +29,17 @@ public class RentService {
 	public boolean insertRentInfo(Rent rent, List<Book> bookList) {
 		
 		Connection conn = jdt.getConnection();
+		String[] bkIdxs = new String[bookList.size()];
+		
+		for (int i = 0; i < bookList.size(); i++) {
+			bkIdxs[i] = bookList.get(i).getBkIdx();
+		}
 		
 		//대출건 정보를 tb_rent_master에 입력
 		
 		try {
-			rentDao.insertRentInfo(conn, rent);
-			for(Book book : bookList) {
-				rentDao.insertRentBookInfo(conn, book.getbIdx());
-			}
+			rentDao.insertRentInfo(conn, rent, bkIdxs);
+			
 			jdt.commit(conn);			
 		}catch(DataAccessException e) {
 			jdt.rollback(conn);

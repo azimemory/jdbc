@@ -23,7 +23,7 @@ public class BookDao {
 		PreparedStatement pstm = null;
 		ResultSet rset = null;
 		
-		String query = "select * from tb_book";
+		String query = "select * from book";
 		
 		try {
 			//3. 쿼리문 실행용 객체 생성함
@@ -33,7 +33,7 @@ public class BookDao {
 			rset = pstm.executeQuery(query);
 			while(rset.next()) {
 				book = new Book();
-				book.setbIdx(rset.getInt("b_idx"));
+				book.setBkIdx(rset.getString("bk_idx"));
 				book.setTitle(rset.getString("title"));
 				book.setAuthor(rset.getString("author"));
 				book.setInfo(rset.getString("info"));
@@ -59,12 +59,12 @@ public class BookDao {
 		ResultSet rset = null;
 		
 		String query = "select" + 
-				" b_Idx, title, author, info, isbn, category, book_amt " +  
+				" bk_idx, title, author, info, isbn, category, book_amt " +  
 				" from(" + 
 				" select rownum rnum, b.*" + 
 				" from(" + 
 				" select * " + 
-				" from tb_book" + 
+				" from book" + 
 				" order by rent_cnt desc" + 
 				" ) b" + 
 				" )where rnum between 1 and 5";
@@ -77,7 +77,7 @@ public class BookDao {
 			rset = pstm.executeQuery(query);
 			while(rset.next()) {
 				book = new Book();
-				book.setbIdx(rset.getInt("b_idx"));
+				book.setBkIdx(rset.getString("bk_idx"));
 				book.setTitle(rset.getString("title"));
 				book.setAuthor(rset.getString("author"));
 				book.setInfo(rset.getString("info"));
@@ -101,7 +101,7 @@ public class BookDao {
 		PreparedStatement pstm = null;
 		ResultSet rset = null;
 		
-		String query = "select * from tb_book where title = ?";
+		String query = "select * from book where title like '%'||?||'%'";
 		
 		try {
 			//3. 쿼리문 실행용 객체 생성함
@@ -113,7 +113,7 @@ public class BookDao {
 			rset = pstm.executeQuery();
 			if(rset.next()) {
 				book = new Book();
-				book.setbIdx(rset.getInt("b_idx"));
+				book.setBkIdx(rset.getString("bk_idx"));
 				book.setTitle(rset.getString("title"));
 				book.setAuthor(rset.getString("author"));
 				book.setInfo(rset.getString("info"));
@@ -133,7 +133,7 @@ public class BookDao {
 		PreparedStatement pstm = null;
 		int res = 0;
 		
-		String query = "insert into tb_book(b_idx, title, author, isbn, category) values(sc_b_idx.nextval,?,?,?,?)";
+		String query = "insert into book(bk_idx, title, author, isbn, category) values(sc_bk_idx.nextval,?,?,?,?)";
 		
 		try {
 			//3. 쿼리문 실행용 객체 생성함
@@ -159,7 +159,7 @@ public class BookDao {
 		PreparedStatement pstm = null;
 		int res = 0;
 		
-		String query = "update tb_book(title, author, isbn, category) values(?,?,?,?) where b_idx = ?";
+		String query = "update book(title, author, isbn, category) values(?,?,?,?) where bk_idx = ?";
 		
 		try {
 			//3. 쿼리문 실행용 객체 생성함
@@ -169,7 +169,7 @@ public class BookDao {
 			pstm.setString(2,book.getAuthor());
 			pstm.setString(3,book.getIsbn());
 			pstm.setString(4,book.getCategory());
-			pstm.setInt(5,book.getbIdx());
+			pstm.setString(5,book.getBkIdx());
 			//4. 쿼리문 실행하고 결과 받음
 			// executeUpdate : 실행된 레코드 수를 반환해 준다.
 			res = pstm.executeUpdate();
@@ -186,7 +186,7 @@ public class BookDao {
 		PreparedStatement pstm = null;
 		int res = 0;
 		
-		String query = "delete from tb_book where b_Idx = ?";
+		String query = "delete from book where bk_idx = ?";
 		
 		try {
 			//3. 쿼리문 실행용 객체 생성함

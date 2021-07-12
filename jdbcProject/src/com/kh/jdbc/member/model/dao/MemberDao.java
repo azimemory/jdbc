@@ -51,9 +51,7 @@ public class MemberDao {
 			
 			//4. 쿼리작성
 			String query = "select * from tb_member where user_id = '" 
-						+ userId + "' and password = '" + password + "'";
-			
-			System.out.println(query);
+						+ userId + "' and password = '" + password + "'";			
 			
 			//5. 쿼리를 실행하고 질의결과(ResultSet) 을 받음
 			rset = stmt.executeQuery(query);
@@ -73,7 +71,6 @@ public class MemberDao {
 				member.setRentableDate(rset.getDate("rentable_date"));
 			}
 			
-		System.out.println("데이터베이스로 부터 받아온 데이터 확인 : " + member);
 		//SQLException : db와 통신 중에 발생하는 모든 예외를 담당하는 Exception	
 		} catch (ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
